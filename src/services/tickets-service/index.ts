@@ -21,8 +21,15 @@ async function getTicket(userId: number) {
   return ticket;
 }
 
-async function insertTicket(body: { ticketTypeId: number }, userId: number, enrollmentId: number) {
-  const newBody = { ...body, status: "RESERVED", enrollmentId } as {status: TicketStatus, ticketTypeId: number, enrollmentId: number};
+async function insertTicket(body: { ticketTypeId: number }, userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) {
+    throw notFoundError();
+  }
+  if (!body.ticketTypeId) {
+    throw { name: "BadRequest" };
+  }
+  const newBody = { ...body, status: "RESERVED", enrollmentId: enrollment.id } as {status: TicketStatus, ticketTypeId: number, enrollmentId: number};
   return await createTicket(newBody);
 }
 
