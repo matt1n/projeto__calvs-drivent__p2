@@ -12,13 +12,13 @@ export async function postPayment(req: AuthenticatedRequest, res: Response) {
     res.send(payment);
   } catch (error) {
     if(error.name==="NotFoundError") {
-      return res.sendStatus(404);
+      return res.sendStatus(NOT_FOUND);
     }
     if(error.name==="UnauthorizedError") {
-      return res.sendStatus(401);
+      return res.sendStatus(UNAUTHORIZED);
     }
     if(error.name==="BadRequestError") {
-      return res.sendStatus(400);
+      return res.sendStatus(BAD_REQUEST);
     }
     res.sendStatus(500);
   }
