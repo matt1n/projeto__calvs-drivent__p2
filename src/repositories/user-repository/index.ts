@@ -21,9 +21,14 @@ async function create(data: Prisma.UserUncheckedCreateInput) {
   });
 }
 
+async function findUserIncludeEnrollmentAndTicket(id: number) {
+  return await prisma.user.findFirst({ where: { id: id }, include: { Enrollment: { include: { Ticket: { include: { TicketType: true } } } } } });
+}
+
 const userRepository = {
   findByEmail,
   create,
+  findUserIncludeEnrollmentAndTicket
 };
 
 export default userRepository;
