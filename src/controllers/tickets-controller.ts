@@ -1,44 +1,46 @@
-
 import { AuthenticatedRequest } from "@/middlewares";
-import ticketsService from "@/services/tickets-service";
-import { Request, Response } from "express";
-import { BAD_REQUEST } from "http-status";
+import ticketService from "@/services/tickets-service";
+import { Response } from "express";
+import httpStatus from "http-status";
 
-export async function getTicketTypes(req: Request, res: Response) {
+export async function getTicketTypes(req: AuthenticatedRequest, res: Response) {
   try {
-    const ticketTypes = await ticketsService.getAllTicketTypes();
-    res.send(ticketTypes);
+    const ticketTypes = await ticketService.getTicketTypes();
+
+    return res.status(httpStatus.OK).send(ticketTypes);
   } catch (error) {
-    res.sendStatus(500);
+    return res.sendStatus(httpStatus.NO_CONTENT);
   }
 }
 
-export async function getTicket(req: AuthenticatedRequest, res: Response) {
-  const userId = req.userId;
+export async function getTickets(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
+
   try {
-    const ticket = await ticketsService.getTicket(Number(userId));
-    res.send(ticket);
+    const ticketTypes = await ticketService.getTicketByUserId(userId);
+
+    return res.status(httpStatus.OK).send(ticketTypes);
   } catch (error) {
-    if (error.name === "NotFoundError") {
-      return res.sendStatus(404);
-    }
-    res.sendStatus(500);
+    return res.sendStatus(httpStatus.NOT_FOUND);
   }
 }
 
-export async function postTicket(req: AuthenticatedRequest, res: Response) {
-  const body = req.body;
-  const userId = req.userId;
+export async function createTicket(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
+
+  //TODO validação do JOI
+  const { ticketTypeId } = req.body;
+
+  if (!ticketTypeId) {
+    return res.sendStatus(httpStatus.BAD_REQUEST);
+  }
+
   try {
-    const ticket = await ticketsService.insertTicket(body, Number(userId));
-    res.status(201).send(ticket);
+    const ticketTypes = await ticketService.createTicket(userId, ticketTypeId);
+
+    return res.status(httpStatus.CREATED).send(ticketTypes);
   } catch (error) {
-    if (error.name === "NotFoundError") {
-      return res.sendStatus(404);
-    }
-    if (error.name === "BadRequest") {
-      return res.sendStatus(BAD_REQUEST);
-    }
-    res.sendStatus(200);
+    return res.sendStatus(httpStatus.NOT_FOUND);
   }
 }
+
