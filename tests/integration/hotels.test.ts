@@ -6,6 +6,7 @@ import * as jwt from "jsonwebtoken";
 import supertest from "supertest";
 import { createEvent } from "../factories";
 import { cleanDb, generateValidToken } from "../helpers";
+import { prisma } from "@/config";
 
 beforeAll(async () => {
   await init();
@@ -98,6 +99,7 @@ describe("GET /hotels", () => {
         });
         describe("when ticket is paid and includes hotel", () => {
           it ("Should respond with 200 and hotels data", async () => {
+            await prisma.hotel.create({ data: { name: "aaaaaaaa", image: "bbbb" } });
             const ticketType = await createTicketTypeHotel();
             const user = await createUser();
             const enrollment = await createEnrollmentWithAddress(user);
@@ -220,6 +222,7 @@ describe("GET /hotels/:hotelId", () => {
         
           describe("when hotelId is valid", () => {
             it ("Should respond with 200 and hotels", async () => {
+              const hotel = await prisma.hotel.create({ data: { name: "aaaaaaaa", image: "bbbb" } });
               const ticketType = await createTicketTypeHotel();
               const user = await createUser();
               const enrollment = await createEnrollmentWithAddress(user);
@@ -227,7 +230,7 @@ describe("GET /hotels/:hotelId", () => {
           
               await createTicket(enrollment.id, ticketType.id, "PAID");
           
-              const response = await server.get("/hotels/2").set("Authorization", `Bearer ${token}`);
+              const response = await server.get(`/hotels/${hotel.id}`).set("Authorization", `Bearer ${token}`);
           
               expect(response.status).toBe(httpStatus.OK);
               expect(response.body).toEqual(
